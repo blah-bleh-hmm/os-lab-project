@@ -187,17 +187,31 @@ cpu-scheduler/
 
 ### Environment Variables
 
-Create a `.env` file inside the `backend/` directory:
+**Backend** — Create a `.env` file inside the `backend/` directory:
 
 ```env
 PORT=6000
 MONGODB_URI=your_mongodb_connection_string_here
+CLIENT_URL=https://your-frontend-domain.vercel.app
 ```
 
-| Variable      | Description                                | Default |
-| ------------- | ------------------------------------------ | ------- |
-| `PORT`        | Port for the Express server                | `6000`  |
-| `MONGODB_URI` | MongoDB connection string (Atlas or local) | —       |
+| Variable       | Description                                          | Default |
+| -------------- | ---------------------------------------------------- | ------- |
+| `PORT`         | Port for the Express server                          | `6000`  |
+| `MONGODB_URI`  | MongoDB connection string (Atlas or local)           | —       |
+| `CLIENT_URL`   | Frontend origin allowed by CORS (for production)     | `*`     |
+
+**Frontend** — Create a `.env` file inside the `frontend/` directory (only needed for production):
+
+```env
+VITE_API_URL=https://your-backend-domain.onrender.com/api
+```
+
+| Variable       | Description                                          | Default |
+| -------------- | ---------------------------------------------------- | ------- |
+| `VITE_API_URL` | Backend API base URL (for production)                | `/api`  |
+
+> **Note:** In local development, no frontend `.env` is needed — the Vite dev server proxies `/api` requests to `http://localhost:6000` automatically.
 
 ### Running the App
 

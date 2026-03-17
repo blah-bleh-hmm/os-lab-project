@@ -1,10 +1,10 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export async function saveProcesses(processes) {
   const res = await fetch(`${API_BASE}/processes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ processes })
+    body: JSON.stringify({ processes }),
   });
   if (!res.ok) {
     const err = await res.json();
@@ -22,7 +22,12 @@ export async function getProcesses(id) {
   return res.json();
 }
 
-export async function runSchedule({ processSetId, processes, algorithms, timeQuantum }) {
+export async function runSchedule({
+  processSetId,
+  processes,
+  algorithms,
+  timeQuantum,
+}) {
   const body = { algorithms };
   if (processSetId) {
     body.processSetId = processSetId;
@@ -35,7 +40,7 @@ export async function runSchedule({ processSetId, processes, algorithms, timeQua
   const res = await fetch(`${API_BASE}/schedule`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json();
