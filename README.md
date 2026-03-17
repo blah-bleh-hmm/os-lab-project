@@ -495,6 +495,149 @@ When 2 or more algorithms were selected, this page provides:
 
 ---
 
+## Deployment (Render + Vercel)
+
+This guide deploys the **backend on Render** (free tier) and the **frontend on Vercel** (free tier). Both auto-deploy on every push to GitHub.
+
+### Prerequisites
+
+- A **GitHub account** with this project pushed to a repository
+- A **MongoDB Atlas** cluster with a connection string ready
+- Free accounts on [Render](https://render.com) and [Vercel](https://vercel.com)
+
+---
+
+### Step 1 — Push to GitHub
+
+If you haven't already, push your project to a GitHub repo:
+
+```bash
+git init
+git add .
+git commit -m "initial commit"
+git branch -M main
+git remote add origin https://github.com/your-username/cpu-scheduler.git
+git push -u origin main
+```
+
+---
+
+### Step 2 — Deploy the Backend on Render
+
+1. Go to [render.com](https://render.com) and sign in with GitHub.
+
+2. Click **"New +"** → **"Web Service"**.
+
+3. Connect your GitHub repo (`cpu-scheduler`).
+
+4. Configure the service:
+
+   | Setting          | Value                |
+   | ---------------- | -------------------- |
+   | **Name**         | `cpu-scheduler-api`  |
+   | **Root Directory**| `backend`           |
+   | **Runtime**      | `Node`               |
+   | **Build Command**| `npm install`        |
+   | **Start Command**| `node server.js`     |
+   | **Instance Type**| `Free`               |
+
+5. Scroll to **"Environment Variables"** and add:
+
+   | Key            | Value                                          |
+   | -------------- | ---------------------------------------------- |
+   | `MONGODB_URI`  | Your MongoDB Atlas connection string            |
+   | `CLIENT_URL`   | `https://your-app.vercel.app` *(add after Step 3)* |
+
+6. Click **"Create Web Service"** and wait for the deploy to finish.
+
+7. Copy your Render service URL — it will look like:
+   ```
+   https://cpu-scheduler-api.onrender.com
+   ```
+
+8. Test it by visiting `https://cpu-scheduler-api.onrender.com/` in your browser — you should see:
+   ```json
+   { "message": "CPU Scheduler API is running" }
+   ```
+
+> **Note:** Render free tier spins down after 15 minutes of inactivity. The first request after inactivity may take 30-60 seconds.
+
+---
+
+### Step 3 — Deploy the Frontend on Vercel
+
+1. Go to [vercel.com](https://vercel.com) and sign in with GitHub.
+
+2. Click **"Add New..."** → **"Project"**.
+
+3. Import your GitHub repo (`cpu-scheduler`).
+
+4. Configure the project:
+
+   | Setting              | Value       |
+   | -------------------- | ----------- |
+   | **Root Directory**   | `frontend`  |
+   | **Framework Preset** | `Vite`      |
+
+   Vercel auto-detects Vite and sets:
+   - **Build Command:** `vite build`
+   - **Output Directory:** `dist`
+
+5. Expand **"Environment Variables"** and add:
+
+   | Key            | Value                                                |
+   | -------------- | ---------------------------------------------------- |
+   | `VITE_API_URL` | `https://cpu-scheduler-api.onrender.com/api`         |
+
+   *(Replace with your actual Render URL from Step 2.)*
+
+6. Click **"Deploy"** and wait for the build to complete.
+
+7. Your frontend is now live at a URL like:
+   ```
+   https://cpu-scheduler.vercel.app
+   ```
+
+---
+
+### Step 4 — Update Backend CORS
+
+Now that you have the Vercel URL, go back to Render and update the CORS variable:
+
+1. Open your Render dashboard → select your `cpu-scheduler-api` service.
+2. Go to **"Environment"** tab.
+3. Update (or add) the `CLIENT_URL` variable:
+
+   | Key          | Value                                  |
+   | ------------ | -------------------------------------- |
+   | `CLIENT_URL` | `https://cpu-scheduler.vercel.app`     |
+
+4. Click **"Save Changes"** — Render will auto-redeploy.
+
+---
+
+### Step 5 — Verify Everything Works
+
+1. Open your Vercel URL (e.g., `https://cpu-scheduler.vercel.app`).
+2. Add some processes on the input page.
+3. Select algorithms and run the scheduler.
+4. If you see results and Gantt charts, the full stack is working.
+
+---
+
+### Troubleshooting
+
+| Problem | Fix |
+| ------- | --- |
+| **Frontend loads but API calls fail** | Check that `VITE_API_URL` is set correctly in Vercel environment variables. Redeploy after changing it (Vite bakes env vars at build time). |
+| **CORS errors in browser console** | Make sure `CLIENT_URL` in Render matches your exact Vercel domain (no trailing slash). |
+| **Render returns 502/503** | Check Render logs. Likely `MONGODB_URI` is wrong or Atlas IP whitelist is blocking Render. In Atlas, go to **Network Access** → add `0.0.0.0/0` to allow all IPs. |
+| **"Application error" on Render** | Make sure **Root Directory** is set to `backend` and Start Command is `node server.js`. |
+| **Blank page on Vercel** | Make sure **Root Directory** is set to `frontend`. Check that the build succeeded in Vercel's deployment logs. |
+| **Slow first load on Render** | Free tier cold starts take 30-60s. Visit the Render URL directly first to wake it up. |
+
+---
+
 ## License
 
 This project was built as a college lab project for the Operating Systems course (Semester 4).
