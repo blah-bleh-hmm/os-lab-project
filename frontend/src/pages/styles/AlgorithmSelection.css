@@ -1,0 +1,191 @@
+.algorithm-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.algorithm-page .page-header {
+  margin-bottom: 32px;
+}
+
+.algorithm-page .page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.algorithm-page .page-header p {
+  color: var(--text-secondary);
+}
+
+.algorithm-page .error-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+}
+
+/* Algorithm cards */
+.algo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .algo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.algo-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: left;
+  transition: all var(--transition);
+  cursor: pointer;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.algo-card:hover {
+  border-color: var(--algo-color);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.algo-card.selected {
+  border-color: var(--algo-color);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--algo-color) 20%, transparent);
+}
+
+.algo-check {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all var(--transition);
+}
+
+.algo-card.selected .algo-check {
+  border-color: var(--algo-color);
+  background: var(--algo-color);
+  color: #fff;
+}
+
+.algo-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-right: 36px;
+}
+
+.algo-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.algo-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: color-mix(in srgb, var(--algo-color) 15%, transparent);
+  color: var(--algo-color);
+}
+
+/* Time quantum */
+.quantum-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.quantum-input label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.quantum-input input {
+  width: 100px;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.quantum-input input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Actions */
+.algorithm-page .actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.algorithm-page .btn {
+  padding: 12px 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.algorithm-page .btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.algorithm-page .btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.algorithm-page .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.algorithm-page .btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.algorithm-page .btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
