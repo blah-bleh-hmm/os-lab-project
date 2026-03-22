@@ -29,7 +29,11 @@ function fcfs(processes) {
 
     // If CPU was idle, record idle block
     if (startTime > currentTime) {
-      ganttChart.push({ processId: 'Idle', start: currentTime, end: startTime });
+      ganttChart.push({
+        processId: 'Idle',
+        start: currentTime,
+        end: startTime,
+      });
     }
 
     const completionTime = startTime + proc.burstTime;
@@ -41,14 +45,19 @@ function fcfs(processes) {
       processId: proc.processId,
       arrivalTime: proc.arrivalTime,
       burstTime: proc.burstTime,
+      ...(proc.priority !== undefined && { priority: proc.priority }),
       startTime,
       completionTime,
       turnaroundTime,
       waitingTime,
-      responseTime
+      responseTime,
     });
 
-    ganttChart.push({ processId: proc.processId, start: startTime, end: completionTime });
+    ganttChart.push({
+      processId: proc.processId,
+      start: startTime,
+      end: completionTime,
+    });
     currentTime = completionTime;
   }
 
@@ -73,11 +82,13 @@ function buildOutput(algorithm, results, ganttChart) {
     averages: {
       avgWaitingTime: parseFloat((totalWT / n).toFixed(2)),
       avgTurnaroundTime: parseFloat((totalTAT / n).toFixed(2)),
-      avgResponseTime: parseFloat((totalRT / n).toFixed(2))
+      avgResponseTime: parseFloat((totalRT / n).toFixed(2)),
     },
     throughput: parseFloat((totalTime > 0 ? n / totalTime : n).toFixed(4)),
-    cpuUtilization: parseFloat((totalTime > 0 ? (totalBurst / totalTime) * 100 : 100).toFixed(2)),
-    totalCompletionTime: lastCompletion
+    cpuUtilization: parseFloat(
+      (totalTime > 0 ? (totalBurst / totalTime) * 100 : 100).toFixed(2),
+    ),
+    totalCompletionTime: lastCompletion,
   };
 }
 

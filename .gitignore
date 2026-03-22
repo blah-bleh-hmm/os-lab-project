@@ -27,5 +27,5 @@ Thumbs.db
 # Vite
 frontend/.vite/
 
-.bat
-.docx
+*.bat
+*.docx

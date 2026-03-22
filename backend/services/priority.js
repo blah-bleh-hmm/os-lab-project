@@ -1,19 +1,23 @@
 /**
- * Shortest Job First (SJF) Non-Preemptive Scheduling Algorithm
+ * Priority Scheduling (Non-Preemptive)
  *
  * Logic: At each scheduling decision point, pick the process with the
- * shortest burst time among all processes that have already arrived.
+ * highest priority (lowest priority number) among all processes that have already arrived.
  * - The selected process runs to completion (non-preemptive).
  * - If no process has arrived, the CPU idles until the next arrival.
- * - Tie-breaker: earlier arrival time, then processId.
+ * - If priority is not provided, defaults to 0 (higher priority).
+ * - Tie-breaker: lower priority number, then earlier arrival time, then processId.
  *
  * Characteristics:
- * - Optimal for minimizing average waiting time (among non-preemptive)
- * - Can cause starvation for long processes
- * - Requires knowledge of burst times in advance
+ * - Allows system to prioritize important processes
+ * - Can cause starvation for low-priority processes
+ * - Requires priority information for each process
  */
-function sjf(processes) {
-  const procs = [...processes].map((p) => ({ ...p }));
+function priority(processes) {
+  const procs = [...processes].map((p) => ({
+    ...p,
+    priority: p.priority !== undefined ? p.priority : 0,
+  }));
   const n = procs.length;
   const done = new Array(n).fill(false);
   let currentTime = 0;
@@ -28,30 +32,29 @@ function sjf(processes) {
   });
 
   while (completed < n) {
-    // Find the process with shortest burst among arrived ones
+    // Find the process with highest priority (lowest priority number) among arrived ones
     let candidate = -1;
-    let minBurst = Infinity;
+    let minPriority = Infinity;
 
     for (let i = 0; i < n; i++) {
       if (done[i]) continue;
       if (procs[i].arrivalTime <= currentTime) {
         if (
-          procs[i].burstTime < minBurst ||
-          (procs[i].burstTime === minBurst &&
+          procs[i].priority < minPriority ||
+          (procs[i].priority === minPriority &&
             candidate !== -1 &&
             (procs[i].arrivalTime < procs[candidate].arrivalTime ||
               (procs[i].arrivalTime === procs[candidate].arrivalTime &&
                 procs[i].processId.localeCompare(procs[candidate].processId) <
                   0)))
         ) {
-          minBurst = procs[i].burstTime;
+          minPriority = procs[i].priority;
           candidate = i;
         }
       }
     }
 
     if (candidate === -1) {
-      // No process arrived yet; jump to the next arrival
       let nextArrival = Infinity;
       for (let i = 0; i < n; i++) {
         if (!done[i]) nextArrival = Math.min(nextArrival, procs[i].arrivalTime);
@@ -85,7 +88,7 @@ function sjf(processes) {
       processId: proc.processId,
       arrivalTime: proc.arrivalTime,
       burstTime: proc.burstTime,
-      ...(proc.priority !== undefined && { priority: proc.priority }),
+      priority: proc.priority,
       startTime,
       completionTime,
       turnaroundTime,
@@ -103,7 +106,7 @@ function sjf(processes) {
     completed++;
   }
 
-  return buildOutput('SJF', results, ganttChart);
+  return buildOutput('Priority Scheduling', results, ganttChart);
 }
 
 function buildOutput(algorithm, results, ganttChart) {
@@ -117,6 +120,8 @@ function buildOutput(algorithm, results, ganttChart) {
   const lastCompletion = Math.max(...results.map((r) => r.completionTime));
   const totalTime = lastCompletion - firstArrival;
 
+  const cpuUtilization = totalTime > 0 ? (totalBurst / totalTime) * 100 : 100;
+
   return {
     algorithm,
     processResults: results,
@@ -127,11 +132,9 @@ function buildOutput(algorithm, results, ganttChart) {
       avgResponseTime: parseFloat((totalRT / n).toFixed(2)),
     },
     throughput: parseFloat((totalTime > 0 ? n / totalTime : n).toFixed(4)),
-    cpuUtilization: parseFloat(
-      (totalTime > 0 ? (totalBurst / totalTime) * 100 : 100).toFixed(2),
-    ),
+    cpuUtilization: parseFloat(cpuUtilization.toFixed(2)),
     totalCompletionTime: lastCompletion,
   };
 }
 
-module.exports = sjf;
+module.exports = priority;

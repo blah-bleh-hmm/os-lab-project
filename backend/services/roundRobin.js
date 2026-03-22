@@ -22,7 +22,7 @@ function roundRobin(processes, timeQuantum) {
       ...p,
       remainingTime: p.burstTime,
       startTime: -1,
-      completionTime: 0
+      completionTime: 0,
     }))
     .sort((a, b) => {
       if (a.arrivalTime !== b.arrivalTime) return a.arrivalTime - b.arrivalTime;
@@ -103,11 +103,12 @@ function roundRobin(processes, timeQuantum) {
       processId: p.processId,
       arrivalTime: p.arrivalTime,
       burstTime: p.burstTime,
+      ...(p.priority !== undefined && { priority: p.priority }),
       startTime: p.startTime,
       completionTime: p.completionTime,
       turnaroundTime,
       waitingTime,
-      responseTime
+      responseTime,
     };
   });
 
@@ -132,11 +133,13 @@ function buildOutput(algorithm, results, ganttChart, timeQuantum) {
     averages: {
       avgWaitingTime: parseFloat((totalWT / n).toFixed(2)),
       avgTurnaroundTime: parseFloat((totalTAT / n).toFixed(2)),
-      avgResponseTime: parseFloat((totalRT / n).toFixed(2))
+      avgResponseTime: parseFloat((totalRT / n).toFixed(2)),
     },
     throughput: parseFloat((totalTime > 0 ? n / totalTime : n).toFixed(4)),
-    cpuUtilization: parseFloat((totalTime > 0 ? (totalBurst / totalTime) * 100 : 100).toFixed(2)),
-    totalCompletionTime: lastCompletion
+    cpuUtilization: parseFloat(
+      (totalTime > 0 ? (totalBurst / totalTime) * 100 : 100).toFixed(2),
+    ),
+    totalCompletionTime: lastCompletion,
   };
 
   if (timeQuantum !== undefined) {

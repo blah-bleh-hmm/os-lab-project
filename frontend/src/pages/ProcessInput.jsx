@@ -11,7 +11,7 @@ function ProcessInput() {
   const [processes, setProcesses] = useState(
     state.processes.length > 0
       ? state.processes
-      : [{ processId: 'P1', arrivalTime: 0, burstTime: 1 }]
+      : [{ processId: 'P1', arrivalTime: 0, burstTime: 1, priority: 0 }],
   );
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -19,7 +19,10 @@ function ProcessInput() {
 
   const addProcess = () => {
     const nextId = `P${processes.length + 1}`;
-    setProcesses([...processes, { processId: nextId, arrivalTime: 0, burstTime: 1 }]);
+    setProcesses([
+      ...processes,
+      { processId: nextId, arrivalTime: 0, burstTime: 1, priority: 0 },
+    ]);
   };
 
   const removeProcess = (index) => {
@@ -32,7 +35,10 @@ function ProcessInput() {
     if (field === 'processId') {
       updated[index] = { ...updated[index], [field]: value };
     } else {
-      updated[index] = { ...updated[index], [field]: value === '' ? '' : Number(value) };
+      updated[index] = {
+        ...updated[index],
+        [field]: value === '' ? '' : Number(value),
+      };
     }
     setProcesses(updated);
 
@@ -58,12 +64,29 @@ function ProcessInput() {
         ids.add(p.processId);
       }
 
-      if (p.arrivalTime === '' || p.arrivalTime < 0 || !Number.isInteger(Number(p.arrivalTime))) {
+      if (
+        p.arrivalTime === '' ||
+        p.arrivalTime < 0 ||
+        !Number.isInteger(Number(p.arrivalTime))
+      ) {
         newErrors[`${i}-arrivalTime`] = 'Must be >= 0';
       }
 
-      if (p.burstTime === '' || p.burstTime < 1 || !Number.isInteger(Number(p.burstTime))) {
+      if (
+        p.burstTime === '' ||
+        p.burstTime < 1 ||
+        !Number.isInteger(Number(p.burstTime))
+      ) {
         newErrors[`${i}-burstTime`] = 'Must be >= 1';
+      }
+
+      if (
+        p.priority === undefined ||
+        p.priority === '' ||
+        !Number.isInteger(Number(p.priority)) ||
+        Number(p.priority) < 0
+      ) {
+        newErrors[`${i}-priority`] = 'Must be >= 0';
       }
     });
 
@@ -80,7 +103,8 @@ function ProcessInput() {
     const cleanProcesses = processes.map((p) => ({
       processId: p.processId.trim(),
       arrivalTime: Number(p.arrivalTime),
-      burstTime: Number(p.burstTime)
+      burstTime: Number(p.burstTime),
+      priority: Number(p.priority),
     }));
 
     try {
@@ -96,68 +120,86 @@ function ProcessInput() {
   };
 
   return (
-    <div className="process-input-page">
-      <div className="page-header">
+    <div className='process-input-page'>
+      <div className='page-header'>
         <h1>Process Input</h1>
         <p>Add processes with their arrival times and burst times.</p>
       </div>
 
-      {apiError && <div className="error-banner">{apiError}</div>}
+      {apiError && <div className='error-banner'>{apiError}</div>}
 
-      <div className="process-table">
-        <div className="table-header">
-          <div className="col col-id">Process ID</div>
-          <div className="col col-at">Arrival Time</div>
-          <div className="col col-bt">Burst Time</div>
-          <div className="col col-action">Action</div>
+      <div className='process-table'>
+        <div className='table-header'>
+          <div className='col col-id'>Process ID</div>
+          <div className='col col-at'>Arrival Time</div>
+          <div className='col col-bt'>Burst Time</div>
+          <div className='col col-pri'>Priority</div>
+          <div className='col col-action'>Action</div>
         </div>
 
         {processes.map((p, i) => (
-          <div key={i} className="table-row">
-            <div className="col col-id">
+          <div key={i} className='table-row'>
+            <div className='col col-id'>
               <input
-                type="text"
+                type='text'
                 value={p.processId}
                 onChange={(e) => updateProcess(i, 'processId', e.target.value)}
                 className={errors[`${i}-processId`] ? 'input-error' : ''}
-                placeholder="P1"
+                placeholder='P1'
               />
               {errors[`${i}-processId`] && (
-                <span className="field-error">{errors[`${i}-processId`]}</span>
+                <span className='field-error'>{errors[`${i}-processId`]}</span>
               )}
             </div>
-            <div className="col col-at">
+            <div className='col col-at'>
               <input
-                type="number"
-                min="0"
+                type='number'
+                min='0'
                 value={p.arrivalTime}
-                onChange={(e) => updateProcess(i, 'arrivalTime', e.target.value)}
+                onChange={(e) =>
+                  updateProcess(i, 'arrivalTime', e.target.value)
+                }
                 className={errors[`${i}-arrivalTime`] ? 'input-error' : ''}
-                placeholder="0"
+                placeholder='0'
               />
               {errors[`${i}-arrivalTime`] && (
-                <span className="field-error">{errors[`${i}-arrivalTime`]}</span>
+                <span className='field-error'>
+                  {errors[`${i}-arrivalTime`]}
+                </span>
               )}
             </div>
-            <div className="col col-bt">
+            <div className='col col-bt'>
               <input
-                type="number"
-                min="1"
+                type='number'
+                min='1'
                 value={p.burstTime}
                 onChange={(e) => updateProcess(i, 'burstTime', e.target.value)}
                 className={errors[`${i}-burstTime`] ? 'input-error' : ''}
-                placeholder="1"
+                placeholder='1'
               />
               {errors[`${i}-burstTime`] && (
-                <span className="field-error">{errors[`${i}-burstTime`]}</span>
+                <span className='field-error'>{errors[`${i}-burstTime`]}</span>
               )}
             </div>
-            <div className="col col-action">
+            <div className='col col-pri'>
+              <input
+                type='number'
+                min='0'
+                value={p.priority !== undefined ? p.priority : 0}
+                onChange={(e) => updateProcess(i, 'priority', e.target.value)}
+                className={errors[`${i}-priority`] ? 'input-error' : ''}
+                placeholder='0'
+              />
+              {errors[`${i}-priority`] && (
+                <span className='field-error'>{errors[`${i}-priority`]}</span>
+              )}
+            </div>
+            <div className='col col-action'>
               <button
-                className="btn-remove"
+                className='btn-remove'
                 onClick={() => removeProcess(i)}
                 disabled={processes.length <= 1}
-                title="Remove process"
+                title='Remove process'
               >
                 &times;
               </button>
@@ -166,11 +208,15 @@ function ProcessInput() {
         ))}
       </div>
 
-      <div className="actions">
-        <button className="btn btn-secondary" onClick={addProcess}>
+      <div className='actions'>
+        <button className='btn btn-secondary' onClick={addProcess}>
           + Add Process
         </button>
-        <button className="btn btn-primary" onClick={handleSubmit} disabled={saving}>
+        <button
+          className='btn btn-primary'
+          onClick={handleSubmit}
+          disabled={saving}
+        >
           {saving ? 'Saving...' : 'Next: Select Algorithms'}
         </button>
       </div>

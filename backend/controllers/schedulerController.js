@@ -3,11 +3,17 @@ const fcfs = require('../services/fcfs');
 const sjf = require('../services/sjf');
 const ljf = require('../services/ljf');
 const roundRobin = require('../services/roundRobin');
+const priority = require('../services/priority');
+const srtf = require('../services/srtf');
+const hrtf = require('../services/hrtf');
 
 const algorithmMap = {
   FCFS: fcfs,
   SJF: sjf,
-  LJF: ljf
+  LJF: ljf,
+  'Priority Scheduling': priority,
+  SRTF: srtf,
+  HRTF: hrtf,
 };
 
 // POST /api/processes — Save a new process set
@@ -16,30 +22,48 @@ const saveProcesses = async (req, res) => {
     const { processes } = req.body;
 
     if (!processes || !Array.isArray(processes) || processes.length === 0) {
-      return res.status(400).json({ error: 'At least one process is required' });
+      return res
+        .status(400)
+        .json({ error: 'At least one process is required' });
     }
 
     // Validate each process
     for (const p of processes) {
-      if (!p.processId || p.arrivalTime === undefined || p.burstTime === undefined) {
-        return res.status(400).json({ error: `Invalid process data: ${JSON.stringify(p)}` });
+      if (
+        !p.processId ||
+        p.arrivalTime === undefined ||
+        p.burstTime === undefined
+      ) {
+        return res
+          .status(400)
+          .json({ error: `Invalid process data: ${JSON.stringify(p)}` });
       }
       if (p.arrivalTime < 0) {
-        return res.status(400).json({ error: `Arrival time cannot be negative for ${p.processId}` });
+        return res
+          .status(400)
+          .json({
+            error: `Arrival time cannot be negative for ${p.processId}`,
+          });
       }
       if (p.burstTime < 1) {
-        return res.status(400).json({ error: `Burst time must be at least 1 for ${p.processId}` });
+        return res
+          .status(400)
+          .json({ error: `Burst time must be at least 1 for ${p.processId}` });
       }
     }
 
     // Check for duplicate process IDs
     const ids = processes.map((p) => p.processId);
     if (new Set(ids).size !== ids.length) {
-      return res.status(400).json({ error: 'Duplicate process IDs are not allowed' });
+      return res
+        .status(400)
+        .json({ error: 'Duplicate process IDs are not allowed' });
     }
 
     const processSet = await ProcessSet.create({ processes });
-    res.status(201).json({ id: processSet._id, processes: processSet.processes });
+    res
+      .status(201)
+      .json({ id: processSet._id, processes: processSet.processes });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -61,7 +85,12 @@ const getProcesses = async (req, res) => {
 // POST /api/schedule — Run scheduling algorithms
 const runSchedule = async (req, res) => {
   try {
-    const { processSetId, processes: directProcesses, algorithms, timeQuantum } = req.body;
+    const {
+      processSetId,
+      processes: directProcesses,
+      algorithms,
+      timeQuantum,
+    } = req.body;
 
     // Get processes either from DB or directly from request
     let processes;
@@ -73,16 +102,21 @@ const runSchedule = async (req, res) => {
       processes = processSet.processes.map((p) => ({
         processId: p.processId,
         arrivalTime: p.arrivalTime,
-        burstTime: p.burstTime
+        burstTime: p.burstTime,
+        ...(p.priority !== undefined && { priority: p.priority }),
       }));
     } else if (directProcesses) {
       processes = directProcesses;
     } else {
-      return res.status(400).json({ error: 'Either processSetId or processes array is required' });
+      return res
+        .status(400)
+        .json({ error: 'Either processSetId or processes array is required' });
     }
 
     if (!algorithms || !Array.isArray(algorithms) || algorithms.length === 0) {
-      return res.status(400).json({ error: 'At least one algorithm must be selected' });
+      return res
+        .status(400)
+        .json({ error: 'At least one algorithm must be selected' });
     }
 
     const results = [];
@@ -90,7 +124,9 @@ const runSchedule = async (req, res) => {
     for (const algo of algorithms) {
       if (algo === 'Round Robin') {
         if (!timeQuantum || timeQuantum < 1) {
-          return res.status(400).json({ error: 'Time quantum must be at least 1 for Round Robin' });
+          return res
+            .status(400)
+            .json({ error: 'Time quantum must be at least 1 for Round Robin' });
         }
         results.push(roundRobin(processes, timeQuantum));
       } else if (algorithmMap[algo]) {

@@ -35,10 +35,12 @@ function ljf(processes) {
       if (procs[i].arrivalTime <= currentTime) {
         if (
           procs[i].burstTime > maxBurst ||
-          (procs[i].burstTime === maxBurst && candidate !== -1 &&
+          (procs[i].burstTime === maxBurst &&
+            candidate !== -1 &&
             (procs[i].arrivalTime < procs[candidate].arrivalTime ||
               (procs[i].arrivalTime === procs[candidate].arrivalTime &&
-                procs[i].processId.localeCompare(procs[candidate].processId) < 0)))
+                procs[i].processId.localeCompare(procs[candidate].processId) <
+                  0)))
         ) {
           maxBurst = procs[i].burstTime;
           candidate = i;
@@ -51,7 +53,11 @@ function ljf(processes) {
       for (let i = 0; i < n; i++) {
         if (!done[i]) nextArrival = Math.min(nextArrival, procs[i].arrivalTime);
       }
-      ganttChart.push({ processId: 'Idle', start: currentTime, end: nextArrival });
+      ganttChart.push({
+        processId: 'Idle',
+        start: currentTime,
+        end: nextArrival,
+      });
       currentTime = nextArrival;
       continue;
     }
@@ -60,7 +66,11 @@ function ljf(processes) {
     const startTime = Math.max(currentTime, proc.arrivalTime);
 
     if (startTime > currentTime) {
-      ganttChart.push({ processId: 'Idle', start: currentTime, end: startTime });
+      ganttChart.push({
+        processId: 'Idle',
+        start: currentTime,
+        end: startTime,
+      });
     }
 
     const completionTime = startTime + proc.burstTime;
@@ -72,14 +82,19 @@ function ljf(processes) {
       processId: proc.processId,
       arrivalTime: proc.arrivalTime,
       burstTime: proc.burstTime,
+      ...(proc.priority !== undefined && { priority: proc.priority }),
       startTime,
       completionTime,
       turnaroundTime,
       waitingTime,
-      responseTime
+      responseTime,
     });
 
-    ganttChart.push({ processId: proc.processId, start: startTime, end: completionTime });
+    ganttChart.push({
+      processId: proc.processId,
+      start: startTime,
+      end: completionTime,
+    });
     currentTime = completionTime;
     done[candidate] = true;
     completed++;
@@ -106,11 +121,13 @@ function buildOutput(algorithm, results, ganttChart) {
     averages: {
       avgWaitingTime: parseFloat((totalWT / n).toFixed(2)),
       avgTurnaroundTime: parseFloat((totalTAT / n).toFixed(2)),
-      avgResponseTime: parseFloat((totalRT / n).toFixed(2))
+      avgResponseTime: parseFloat((totalRT / n).toFixed(2)),
     },
     throughput: parseFloat((totalTime > 0 ? n / totalTime : n).toFixed(4)),
-    cpuUtilization: parseFloat((totalTime > 0 ? (totalBurst / totalTime) * 100 : 100).toFixed(2)),
-    totalCompletionTime: lastCompletion
+    cpuUtilization: parseFloat(
+      (totalTime > 0 ? (totalBurst / totalTime) * 100 : 100).toFixed(2),
+    ),
+    totalCompletionTime: lastCompletion,
   };
 }
 

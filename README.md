@@ -27,8 +27,8 @@ Built with **React 18** + **Vite** on the frontend and **Express.js** + **MongoD
 
 ## Features
 
-- **Interactive Process Input** — Add, edit, and remove processes with arrival time and burst time via an inline editable table with real-time validation.
-- **4 Scheduling Algorithms** — FCFS, SJF, LJF, and Round Robin (with configurable time quantum).
+- **Interactive Process Input** — Add, edit, and remove processes with arrival time, burst time, and optional priority via an inline editable table with real-time validation.
+- **7 Scheduling Algorithms** — FCFS, SJF, LJF, Priority Scheduling, SRTF, HRTF, and Round Robin (with configurable time quantum).
 - **Animated Gantt Charts** — Fully custom-built (no charting library) with staggered block reveal animations, shimmer effects, color-coded process blocks, idle-time striping, auto-scroll, and a labeled time axis.
 - **Detailed Per-Process Metrics** — Start time, completion time, turnaround time, waiting time, and response time for every process.
 - **Aggregate Metrics** — Average waiting time, average turnaround time, average response time, throughput, CPU utilization, and total completion time.
@@ -44,12 +44,15 @@ Built with **React 18** + **Vite** on the frontend and **Express.js** + **MongoD
 
 ## Supported Algorithms
 
-| Algorithm                         | Type           | Description                                                                                                                                                             |
-| --------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **FCFS** (First Come First Serve) | Non-preemptive | Processes are executed in the order they arrive. Simple and fair, but susceptible to the convoy effect.                                                                 |
-| **SJF** (Shortest Job First)      | Non-preemptive | Selects the process with the smallest burst time among those that have arrived. Optimal for minimizing average waiting time, but can starve long processes.             |
-| **LJF** (Longest Job First)       | Non-preemptive | Selects the process with the largest burst time among those that have arrived. Useful as a comparison baseline; tends to maximize average waiting time.                 |
-| **Round Robin**                   | Preemptive     | Each process gets a fixed time quantum. After the quantum expires, the process is preempted and placed at the back of the ready queue. Fair with bounded response time. |
+| Algorithm                                | Type           | Description                                                                                                                                                             |
+| ---------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **FCFS** (First Come First Serve)        | Non-preemptive | Processes are executed in the order they arrive. Simple and fair, but susceptible to the convoy effect.                                                                 |
+| **SJF** (Shortest Job First)             | Non-preemptive | Selects the process with the smallest burst time among those that have arrived. Optimal for minimizing average waiting time, but can starve long processes.             |
+| **LJF** (Longest Job First)              | Non-preemptive | Selects the process with the largest burst time among those that have arrived. Useful as a comparison baseline; tends to maximize average waiting time.                 |
+| **Priority Scheduling**                  | Non-preemptive | Selects the process with the highest priority (lowest priority number). Allows prioritizing important processes but can cause starvation for low-priority processes.    |
+| **SRTF** (Shortest Remaining Time First) | Preemptive     | Preemptive version of SJF. Selects the process with the shortest remaining burst time. Minimizes waiting time but may cause frequent context switches.                  |
+| **HRTF** (Highest Response Time First)   | Non-preemptive | Selects the process that has been waiting the longest. Prevents starvation and improves fairness for long-running processes.                                            |
+| **Round Robin**                          | Preemptive     | Each process gets a fixed time quantum. After the quantum expires, the process is preempted and placed at the back of the ready queue. Fair with bounded response time. |
 
 ---
 
@@ -57,12 +60,12 @@ Built with **React 18** + **Vite** on the frontend and **Express.js** + **MongoD
 
 > _Add screenshots of each step here._
 
-| Step                       | Description                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------- |
-| **1. Process Input**       | Editable table for entering process IDs, arrival times, and burst times                |
-| **2. Algorithm Selection** | Color-coded algorithm cards with multi-select and time quantum config                  |
-| **3. Results**             | Per-algorithm metrics cards, data tables, and animated Gantt charts                    |
-| **4. Comparison**          | Side-by-side metrics, CPU utilization chart, Gantt comparison grid, and export buttons |
+| Step                       | Description                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------ |
+| **1. Process Input**       | Editable table for entering process IDs, arrival times, burst times, and optional priority |
+| **2. Algorithm Selection** | Color-coded algorithm cards with multi-select and time quantum config                      |
+| **3. Results**             | Per-algorithm metrics cards, data tables, and animated Gantt charts                        |
+| **4. Comparison**          | Side-by-side metrics, CPU utilization chart, Gantt comparison grid, and export buttons     |
 
 ---
 
@@ -82,15 +85,16 @@ Built with **React 18** + **Vite** on the frontend and **Express.js** + **MongoD
 
 ### Backend
 
-| Technology                                     | Purpose                         |
-| ---------------------------------------------- | ------------------------------- |
-| [Node.js](https://nodejs.org/)                 | Runtime                         |
-| [Express.js 4](https://expressjs.com/)         | REST API framework              |
-| [Mongoose 8](https://mongoosejs.com/)          | MongoDB ODM                     |
-| [MongoDB Atlas](https://www.mongodb.com/atlas) | Cloud database                  |
-| [dotenv](https://github.com/motdotla/dotenv)   | Environment variable management |
-| [cors](https://github.com/expressjs/cors)      | Cross-origin resource sharing   |
-| [nodemon](https://nodemon.io/)                 | Dev server auto-restart         |
+| Technology                                     | Purpose                          |
+| ---------------------------------------------- | -------------------------------- |
+| [Node.js](https://nodejs.org/)                 | Runtime                          |
+| [Express.js 4](https://expressjs.com/)         | REST API framework               |
+| [Mongoose 8](https://mongoosejs.com/)          | MongoDB ODM                      |
+| [MongoDB Atlas](https://www.mongodb.com/atlas) | Cloud database                   |
+| [dotenv](https://github.com/motdotla/dotenv)   | Environment variable management  |
+| [cors](https://github.com/expressjs/cors)      | Cross-origin resource sharing    |
+| [nodemon](https://nodemon.io/)                 | Dev server auto-restart          |
+| [concurrently](https://npm.im/concurrently)    | Run multiple scripts in parallel |
 
 ---
 
@@ -98,6 +102,7 @@ Built with **React 18** + **Vite** on the frontend and **Express.js** + **MongoD
 
 ```
 cpu-scheduler/
+├── package.json                     # Root package.json (concurrently scripts)
 ├── backend/
 │   ├── server.js                    # Express app entry point
 │   ├── .env                         # Environment variables (PORT, MONGODB_URI)
@@ -114,6 +119,9 @@ cpu-scheduler/
 │       ├── fcfs.js                  # First Come First Serve implementation
 │       ├── sjf.js                   # Shortest Job First implementation
 │       ├── ljf.js                   # Longest Job First implementation
+│       ├── priority.js              # Priority Scheduling implementation
+│       ├── srtf.js                  # Shortest Remaining Time First implementation
+│       ├── hrtf.js                  # Highest Response Time First implementation
 │       └── roundRobin.js            # Round Robin implementation
 │
 ├── frontend/
@@ -195,11 +203,11 @@ MONGODB_URI=your_mongodb_connection_string_here
 CLIENT_URL=https://your-frontend-domain.vercel.app
 ```
 
-| Variable       | Description                                          | Default |
-| -------------- | ---------------------------------------------------- | ------- |
-| `PORT`         | Port for the Express server                          | `6000`  |
-| `MONGODB_URI`  | MongoDB connection string (Atlas or local)           | —       |
-| `CLIENT_URL`   | Frontend origin allowed by CORS (for production)     | `*`     |
+| Variable      | Description                                      | Default |
+| ------------- | ------------------------------------------------ | ------- |
+| `PORT`        | Port for the Express server                      | `6000`  |
+| `MONGODB_URI` | MongoDB connection string (Atlas or local)       | —       |
+| `CLIENT_URL`  | Frontend origin allowed by CORS (for production) | `*`     |
 
 **Frontend** — Create a `.env` file inside the `frontend/` directory (only needed for production):
 
@@ -207,13 +215,31 @@ CLIENT_URL=https://your-frontend-domain.vercel.app
 VITE_API_URL=https://your-backend-domain.onrender.com/api
 ```
 
-| Variable       | Description                                          | Default |
-| -------------- | ---------------------------------------------------- | ------- |
-| `VITE_API_URL` | Backend API base URL (for production)                | `/api`  |
+| Variable       | Description                           | Default |
+| -------------- | ------------------------------------- | ------- |
+| `VITE_API_URL` | Backend API base URL (for production) | `/api`  |
 
 > **Note:** In local development, no frontend `.env` is needed — the Vite dev server proxies `/api` requests to `http://localhost:6000` automatically.
 
 ### Running the App
+
+#### Option 1: Run Both Servers Concurrently (Recommended)
+
+From the root directory:
+
+```bash
+npm install          # Install root-level dependencies (including concurrently)
+npm run dev          # Starts both backend and frontend simultaneously
+```
+
+Both servers will run in the same terminal:
+
+- **Backend**: http://localhost:6000
+- **Frontend**: http://localhost:3000
+
+Open your browser and navigate to **http://localhost:3000**.
+
+#### Option 2: Run Servers in Separate Terminals
 
 You need **two terminals** — one for the backend and one for the frontend.
 
@@ -242,9 +268,10 @@ Open your browser and navigate to **http://localhost:3000**.
 ### Production Build
 
 ```bash
-cd frontend
-npm run build      # outputs to frontend/dist/
-npm run preview    # preview the production build locally
+npm run build       # builds frontend (outputs to frontend/dist/)
+npm run start:backend   # starts backend server in production
+# In another terminal:
+npm run start:frontend  # preview the production build locally
 ```
 
 ---
@@ -532,25 +559,26 @@ git push -u origin main
 
 4. Configure the service:
 
-   | Setting          | Value                |
-   | ---------------- | -------------------- |
-   | **Name**         | `cpu-scheduler-api`  |
-   | **Root Directory**| `backend`           |
-   | **Runtime**      | `Node`               |
-   | **Build Command**| `npm install`        |
-   | **Start Command**| `node server.js`     |
-   | **Instance Type**| `Free`               |
+   | Setting            | Value               |
+   | ------------------ | ------------------- |
+   | **Name**           | `cpu-scheduler-api` |
+   | **Root Directory** | `backend`           |
+   | **Runtime**        | `Node`              |
+   | **Build Command**  | `npm install`       |
+   | **Start Command**  | `node server.js`    |
+   | **Instance Type**  | `Free`              |
 
 5. Scroll to **"Environment Variables"** and add:
 
-   | Key            | Value                                          |
-   | -------------- | ---------------------------------------------- |
-   | `MONGODB_URI`  | Your MongoDB Atlas connection string            |
-   | `CLIENT_URL`   | `https://your-app.vercel.app` *(add after Step 3)* |
+   | Key           | Value                                              |
+   | ------------- | -------------------------------------------------- |
+   | `MONGODB_URI` | Your MongoDB Atlas connection string               |
+   | `CLIENT_URL`  | `https://your-app.vercel.app` _(add after Step 3)_ |
 
 6. Click **"Create Web Service"** and wait for the deploy to finish.
 
 7. Copy your Render service URL — it will look like:
+
    ```
    https://cpu-scheduler-api.onrender.com
    ```
@@ -574,10 +602,10 @@ git push -u origin main
 
 4. Configure the project:
 
-   | Setting              | Value       |
-   | -------------------- | ----------- |
-   | **Root Directory**   | `frontend`  |
-   | **Framework Preset** | `Vite`      |
+   | Setting              | Value      |
+   | -------------------- | ---------- |
+   | **Root Directory**   | `frontend` |
+   | **Framework Preset** | `Vite`     |
 
    Vercel auto-detects Vite and sets:
    - **Build Command:** `vite build`
@@ -585,11 +613,11 @@ git push -u origin main
 
 5. Expand **"Environment Variables"** and add:
 
-   | Key            | Value                                                |
-   | -------------- | ---------------------------------------------------- |
-   | `VITE_API_URL` | `https://cpu-scheduler-api.onrender.com/api`         |
+   | Key            | Value                                        |
+   | -------------- | -------------------------------------------- |
+   | `VITE_API_URL` | `https://cpu-scheduler-api.onrender.com/api` |
 
-   *(Replace with your actual Render URL from Step 2.)*
+   _(Replace with your actual Render URL from Step 2.)_
 
 6. Click **"Deploy"** and wait for the build to complete.
 
@@ -608,9 +636,9 @@ Now that you have the Vercel URL, go back to Render and update the CORS variable
 2. Go to **"Environment"** tab.
 3. Update (or add) the `CLIENT_URL` variable:
 
-   | Key          | Value                                  |
-   | ------------ | -------------------------------------- |
-   | `CLIENT_URL` | `https://cpu-scheduler.vercel.app`     |
+   | Key          | Value                              |
+   | ------------ | ---------------------------------- |
+   | `CLIENT_URL` | `https://cpu-scheduler.vercel.app` |
 
 4. Click **"Save Changes"** — Render will auto-redeploy.
 
@@ -627,14 +655,14 @@ Now that you have the Vercel URL, go back to Render and update the CORS variable
 
 ### Troubleshooting
 
-| Problem | Fix |
-| ------- | --- |
-| **Frontend loads but API calls fail** | Check that `VITE_API_URL` is set correctly in Vercel environment variables. Redeploy after changing it (Vite bakes env vars at build time). |
-| **CORS errors in browser console** | Make sure `CLIENT_URL` in Render matches your exact Vercel domain (no trailing slash). |
-| **Render returns 502/503** | Check Render logs. Likely `MONGODB_URI` is wrong or Atlas IP whitelist is blocking Render. In Atlas, go to **Network Access** → add `0.0.0.0/0` to allow all IPs. |
-| **"Application error" on Render** | Make sure **Root Directory** is set to `backend` and Start Command is `node server.js`. |
-| **Blank page on Vercel** | Make sure **Root Directory** is set to `frontend`. Check that the build succeeded in Vercel's deployment logs. |
-| **Slow first load on Render** | Free tier cold starts take 30-60s. Visit the Render URL directly first to wake it up. |
+| Problem                               | Fix                                                                                                                                                               |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend loads but API calls fail** | Check that `VITE_API_URL` is set correctly in Vercel environment variables. Redeploy after changing it (Vite bakes env vars at build time).                       |
+| **CORS errors in browser console**    | Make sure `CLIENT_URL` in Render matches your exact Vercel domain (no trailing slash).                                                                            |
+| **Render returns 502/503**            | Check Render logs. Likely `MONGODB_URI` is wrong or Atlas IP whitelist is blocking Render. In Atlas, go to **Network Access** → add `0.0.0.0/0` to allow all IPs. |
+| **"Application error" on Render**     | Make sure **Root Directory** is set to `backend` and Start Command is `node server.js`.                                                                           |
+| **Blank page on Vercel**              | Make sure **Root Directory** is set to `frontend`. Check that the build succeeded in Vercel's deployment logs.                                                    |
+| **Slow first load on Render**         | Free tier cold starts take 30-60s. Visit the Render URL directly first to wake it up.                                                                             |
 
 ---
 
