@@ -133,7 +133,7 @@ function srtf(processes) {
     }
   }
 
-  return buildOutput('SRTF', results, ganttChart);
+  return buildOutput('Shortest Remaining Time First', results, ganttChart);
 }
 
 function buildOutput(algorithm, results, ganttChart) {

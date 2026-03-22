@@ -103,7 +103,7 @@ function sjf(processes) {
     completed++;
   }
 
-  return buildOutput('SJF', results, ganttChart);
+  return buildOutput('Shortest Job First', results, ganttChart);
 }
 
 function buildOutput(algorithm, results, ganttChart) {

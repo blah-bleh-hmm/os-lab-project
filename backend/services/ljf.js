@@ -100,7 +100,7 @@ function ljf(processes) {
     completed++;
   }
 
-  return buildOutput('LJF', results, ganttChart);
+  return buildOutput('Longest Job First', results, ganttChart);
 }
 
 function buildOutput(algorithm, results, ganttChart) {

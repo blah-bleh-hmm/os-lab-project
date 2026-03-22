@@ -105,7 +105,7 @@ function hrtf(processes) {
     completed++;
   }
 
-  return buildOutput('HRTF', results, ganttChart);
+  return buildOutput('Highest Response Time First', results, ganttChart);
 }
 
 function buildOutput(algorithm, results, ganttChart) {

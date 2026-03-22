@@ -61,7 +61,7 @@ function fcfs(processes) {
     currentTime = completionTime;
   }
 
-  return buildOutput('FCFS', results, ganttChart);
+  return buildOutput('First Come First Serve', results, ganttChart);
 }
 
 function buildOutput(algorithm, results, ganttChart) {

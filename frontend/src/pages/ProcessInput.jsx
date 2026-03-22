@@ -2,6 +2,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScheduler } from '../context/SchedulerContext';
 import { saveProcesses } from '../api/schedulerApi';
+import { SAMPLE_PROCESSES } from '../constants/sampleData';
+import ProcessTable from '../components/ProcessTable';
+import {
+  addProcess as addProcessUtil,
+  removeProcess as removeProcessUtil,
+  updateProcess as updateProcessUtil,
+  validateProcesses,
+  cleanProcesses,
+} from '../utils/processUtils';
 import './styles/ProcessInput.css';
 
 function ProcessInput() {
@@ -18,80 +27,35 @@ function ProcessInput() {
   const [apiError, setApiError] = useState('');
 
   const addProcess = () => {
-    const nextId = `P${processes.length + 1}`;
-    setProcesses([
-      ...processes,
-      { processId: nextId, arrivalTime: 0, burstTime: 1, priority: 0 },
-    ]);
+    setProcesses(addProcessUtil(processes));
   };
 
   const removeProcess = (index) => {
-    if (processes.length <= 1) return;
-    setProcesses(processes.filter((_, i) => i !== index));
+    setProcesses(removeProcessUtil(processes, index));
   };
 
   const updateProcess = (index, field, value) => {
-    const updated = [...processes];
-    if (field === 'processId') {
-      updated[index] = { ...updated[index], [field]: value };
-    } else {
-      updated[index] = {
-        ...updated[index],
-        [field]: value === '' ? '' : Number(value),
-      };
-    }
+    const { processes: updated, errors: updatedErrors } = updateProcessUtil(
+      processes,
+      errors,
+      index,
+      field,
+      value,
+    );
     setProcesses(updated);
-
-    // Clear field error
-    const key = `${index}-${field}`;
-    if (errors[key]) {
-      const newErrors = { ...errors };
-      delete newErrors[key];
-      setErrors(newErrors);
-    }
+    setErrors(updatedErrors);
   };
 
   const validate = () => {
-    const newErrors = {};
-    const ids = new Set();
-
-    processes.forEach((p, i) => {
-      if (!p.processId || p.processId.trim() === '') {
-        newErrors[`${i}-processId`] = 'Required';
-      } else if (ids.has(p.processId)) {
-        newErrors[`${i}-processId`] = 'Duplicate';
-      } else {
-        ids.add(p.processId);
-      }
-
-      if (
-        p.arrivalTime === '' ||
-        p.arrivalTime < 0 ||
-        !Number.isInteger(Number(p.arrivalTime))
-      ) {
-        newErrors[`${i}-arrivalTime`] = 'Must be >= 0';
-      }
-
-      if (
-        p.burstTime === '' ||
-        p.burstTime < 1 ||
-        !Number.isInteger(Number(p.burstTime))
-      ) {
-        newErrors[`${i}-burstTime`] = 'Must be >= 1';
-      }
-
-      if (
-        p.priority === undefined ||
-        p.priority === '' ||
-        !Number.isInteger(Number(p.priority)) ||
-        Number(p.priority) < 0
-      ) {
-        newErrors[`${i}-priority`] = 'Must be >= 0';
-      }
-    });
-
+    const { errors: newErrors, isValid } = validateProcesses(processes);
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
+  };
+
+  const loadSampleData = () => {
+    setProcesses(SAMPLE_PROCESSES);
+    setErrors({});
+    setApiError('');
   };
 
   const handleSubmit = async () => {
@@ -100,16 +64,11 @@ function ProcessInput() {
     setSaving(true);
     setApiError('');
 
-    const cleanProcesses = processes.map((p) => ({
-      processId: p.processId.trim(),
-      arrivalTime: Number(p.arrivalTime),
-      burstTime: Number(p.burstTime),
-      priority: Number(p.priority),
-    }));
+    const cleanedProcesses = cleanProcesses(processes);
 
     try {
-      const data = await saveProcesses(cleanProcesses);
-      dispatch({ type: 'SET_PROCESSES', payload: cleanProcesses });
+      const data = await saveProcesses(cleanedProcesses);
+      dispatch({ type: 'SET_PROCESSES', payload: cleanedProcesses });
       dispatch({ type: 'SET_PROCESS_SET_ID', payload: data.id });
       navigate('/algorithms');
     } catch (err) {
@@ -128,89 +87,19 @@ function ProcessInput() {
 
       {apiError && <div className='error-banner'>{apiError}</div>}
 
-      <div className='process-table'>
-        <div className='table-header'>
-          <div className='col col-id'>Process ID</div>
-          <div className='col col-at'>Arrival Time</div>
-          <div className='col col-bt'>Burst Time</div>
-          <div className='col col-pri'>Priority</div>
-          <div className='col col-action'>Action</div>
-        </div>
-
-        {processes.map((p, i) => (
-          <div key={i} className='table-row'>
-            <div className='col col-id'>
-              <input
-                type='text'
-                value={p.processId}
-                onChange={(e) => updateProcess(i, 'processId', e.target.value)}
-                className={errors[`${i}-processId`] ? 'input-error' : ''}
-                placeholder='P1'
-              />
-              {errors[`${i}-processId`] && (
-                <span className='field-error'>{errors[`${i}-processId`]}</span>
-              )}
-            </div>
-            <div className='col col-at'>
-              <input
-                type='number'
-                min='0'
-                value={p.arrivalTime}
-                onChange={(e) =>
-                  updateProcess(i, 'arrivalTime', e.target.value)
-                }
-                className={errors[`${i}-arrivalTime`] ? 'input-error' : ''}
-                placeholder='0'
-              />
-              {errors[`${i}-arrivalTime`] && (
-                <span className='field-error'>
-                  {errors[`${i}-arrivalTime`]}
-                </span>
-              )}
-            </div>
-            <div className='col col-bt'>
-              <input
-                type='number'
-                min='1'
-                value={p.burstTime}
-                onChange={(e) => updateProcess(i, 'burstTime', e.target.value)}
-                className={errors[`${i}-burstTime`] ? 'input-error' : ''}
-                placeholder='1'
-              />
-              {errors[`${i}-burstTime`] && (
-                <span className='field-error'>{errors[`${i}-burstTime`]}</span>
-              )}
-            </div>
-            <div className='col col-pri'>
-              <input
-                type='number'
-                min='0'
-                value={p.priority !== undefined ? p.priority : 0}
-                onChange={(e) => updateProcess(i, 'priority', e.target.value)}
-                className={errors[`${i}-priority`] ? 'input-error' : ''}
-                placeholder='0'
-              />
-              {errors[`${i}-priority`] && (
-                <span className='field-error'>{errors[`${i}-priority`]}</span>
-              )}
-            </div>
-            <div className='col col-action'>
-              <button
-                className='btn-remove'
-                onClick={() => removeProcess(i)}
-                disabled={processes.length <= 1}
-                title='Remove process'
-              >
-                &times;
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ProcessTable
+        processes={processes}
+        errors={errors}
+        onUpdate={updateProcess}
+        onRemove={removeProcess}
+      />
 
       <div className='actions'>
         <button className='btn btn-secondary' onClick={addProcess}>
           + Add Process
+        </button>
+        <button className='btn btn-secondary' onClick={loadSampleData}>
+          📋 Load Sample Data
         </button>
         <button
           className='btn btn-primary'

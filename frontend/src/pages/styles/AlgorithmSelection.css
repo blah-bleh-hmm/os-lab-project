@@ -105,6 +105,7 @@
   display: inline-block;
   padding: 4px 12px;
   border-radius: 999px;
+  margin-right: 4px ;
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -112,7 +113,9 @@
   background: color-mix(in srgb, var(--algo-color) 15%, transparent);
   color: var(--algo-color);
 }
-
+.algo-type{
+  text-transform: capitalize;
+}
 /* Time quantum */
 .quantum-input {
   background: var(--bg-card);
