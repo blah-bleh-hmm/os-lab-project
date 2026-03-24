@@ -9,10 +9,12 @@ Built with **React 18** + **Vite** on the frontend and **Express.js** + **MongoD
 ## Table of Contents
 
 - [Features](#features)
+- [Quick Start](#quick-start)
 - [Supported Algorithms](#supported-algorithms)
 - [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
+- [Architecture Highlights](#architecture-highlights)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -39,6 +41,17 @@ Built with **React 18** + **Vite** on the frontend and **Express.js** + **MongoD
 - **Dark / Light Theme** — Full dual-theme support with CSS custom properties. Respects system preference on first visit and persists the choice to `localStorage`.
 - **Responsive Design** — Mobile-friendly layout with breakpoints at 640px and 860px.
 - **Stepper Navigation** — 4-step wizard flow (Processes → Algorithms → Results → Compare) with visual progress indicators.
+- **Sample Data** — Quick load button on Process Input page with 7 pre-configured processes for instant testing and demos.
+- **Select All** — Bulk selection button to test all algorithms at once.
+
+---
+
+## Quick Start
+
+1. **Add Processes** — Either manually enter processes or click **"Load Sample Data"** to populate with 7 example processes
+2. **Select Algorithms** — Choose scheduling algorithms or click **"Select All"** to test all 7 at once
+3. **View Results** — See metrics cards, process details, and animated Gantt charts for each algorithm
+4. **Compare & Export** — Side-by-side comparison, automatic best-algorithm detection, and PDF/JSON export
 
 ---
 
@@ -138,17 +151,39 @@ cpu-scheduler/
 │       ├── context/
 │       │   ├── SchedulerContext.jsx  # Global state (useReducer) for processes & results
 │       │   └── ThemeContext.jsx      # Dark/light theme state (localStorage-backed)
+│       ├── constants/
+│       │   ├── algorithms.js        # ALGORITHMS array (algorithm metadata)
+│       │   └── sampleData.js        # SAMPLE_PROCESSES for quick testing
+│       ├── utils/
+│       │   ├── processUtils.js      # Process manipulation utilities (add, update, validate, clean)
+│       │   ├── algorithmUtils.js    # Algorithm validation utilities
+│       │   └── comparisonUtils.js   # Comparison calculations & export functions (PDF, JSON)
 │       ├── components/
 │       │   ├── Navbar.jsx           # Top nav with stepper + theme toggle
 │       │   ├── GanttChart.jsx       # Custom animated Gantt chart
 │       │   ├── CPUUtilizationChart.jsx  # Recharts line chart
+│       │   ├── ProcessTable.jsx     # Process input table wrapper
+│       │   ├── ProcessRow.jsx       # Individual process row
+│       │   ├── AlgorithmCard.jsx    # Algorithm selection card
+│       │   ├── AlgorithmGrid.jsx    # Algorithm grid with cards
+│       │   ├── QuantumInput.jsx     # Time quantum input
+│       │   ├── EmptyState.jsx       # Reusable empty state UI
+│       │   ├── MetricsGrid.jsx      # Results metrics cards
+│       │   ├── ProcessDetailTable.jsx # Process details table
+│       │   ├── ResultSection.jsx    # Per-algorithm result section
+│       │   ├── ResultActions.jsx    # Results page actions
+│       │   ├── BestBanner.jsx       # Best algorithm banner
+│       │   ├── ComparisonTable.jsx  # Comparison metrics table
+│       │   ├── GanttComparisonGrid.jsx # Side-by-side Gantt charts
+│       │   ├── ComparisonActions.jsx   # Export & reset actions
 │       │   └── styles/
 │       │       ├── Navbar.css
 │       │       ├── GanttChart.css
-│       │       └── CPUUtilizationChart.css
+│       │       ├── CPUUtilizationChart.css
+│       │       ├── (page-specific CSS files)
 │       └── pages/
-│           ├── ProcessInput.jsx     # Step 1: Enter processes
-│           ├── AlgorithmSelection.jsx # Step 2: Pick algorithms
+│           ├── ProcessInput.jsx     # Step 1: Enter processes (with sample data button)
+│           ├── AlgorithmSelection.jsx # Step 2: Pick algorithms (with select all button)
 │           ├── Results.jsx          # Step 3: View results
 │           ├── Comparison.jsx       # Step 4: Compare & export
 │           └── styles/
@@ -159,6 +194,14 @@ cpu-scheduler/
 │
 └── README.md
 ```
+
+### Architecture Highlights
+
+- **Component Composition** — UI is organized into small, reusable components (ProcessRow, AlgorithmCard, MetricsGrid, etc.)
+- **Utility Functions** — Business logic extracted into utility modules (processUtils, algorithmUtils, comparisonUtils) for testability and reusability
+- **Constants & Sample Data** — Algorithm metadata and sample process data centralized in the `constants/` folder
+- **State Management** — Global state via React Context (SchedulerContext) with useReducer pattern
+- **Separation of Concerns** — Page components orchestrate; UI and utility components handle rendering and logic
 
 ---
 
